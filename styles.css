@@ -1,14 +1,14 @@
 :root {
-  --bg: #0d1117;
-  --panel: #161b22;
-  --text: #c9d1d9;
-  --muted: #8b949e;
-  --line: #30363d;
-  --lv0: #161b22;
-  --lv1: #0e4429;
-  --lv2: #006d32;
-  --lv3: #26a641;
-  --lv4: #39d353;
+  --bg: #ffffff;
+  --panel: #ffffff;
+  --text: #24292f;
+  --muted: #57606a;
+  --line: #d0d7de;
+  --lv0: #ebedf0;
+  --lv1: #9be9a8;
+  --lv2: #40c463;
+  --lv3: #30a14e;
+  --lv4: #216e39;
 }
 
 * { box-sizing: border-box; }
@@ -52,7 +52,7 @@ select {
 
 .heatmap {
   display: grid;
-  grid-template-columns: repeat(53, 12px);
+  grid-auto-flow: column;
   grid-template-rows: repeat(7, 12px);
   gap: 3px;
   overflow-x: auto;
@@ -73,6 +73,7 @@ select {
 .day.lv2 { background: var(--lv2); }
 .day.lv3 { background: var(--lv3); }
 .day.lv4 { background: var(--lv4); }
+.day.out-of-year { opacity: 0.35; }
 
 .legend {
   margin-top: 10px;

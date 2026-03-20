@@ -3,6 +3,9 @@ const yearSelectEl = document.getElementById('yearSelect');
 const summaryTitleEl = document.getElementById('summaryTitle');
 const summaryContentEl = document.getElementById('summaryContent');
 
+// 手动维护可选年份（新增年份时在这里加）
+const AVAILABLE_YEARS = [2026];
+
 const toMinutes = (duration) => {
   const t = String(duration).trim().toLowerCase();
   if (t.endsWith('min')) return Number(t.replace('min', '')) || 0;
@@ -37,16 +40,21 @@ function parseYearMd(md, year) {
 
 function buildDayMap(rows) {
   const dayMap = new Map();
+  const dayDetailsMap = new Map();
   const workoutMap = new Map();
   let totalMinutes = 0;
 
   for (const r of rows) {
     dayMap.set(r.iso, (dayMap.get(r.iso) || 0) + r.minutes);
     workoutMap.set(r.workout, (workoutMap.get(r.workout) || 0) + r.minutes);
+
+    if (!dayDetailsMap.has(r.iso)) dayDetailsMap.set(r.iso, []);
+    dayDetailsMap.get(r.iso).push({ workout: r.workout, duration: r.duration, minutes: r.minutes });
+
     totalMinutes += r.minutes;
   }
 
-  return { dayMap, workoutMap, totalMinutes };
+  return { dayMap, dayDetailsMap, workoutMap, totalMinutes };
 }
 
 function levelFromMinutes(minutes) {
@@ -57,7 +65,7 @@ function levelFromMinutes(minutes) {
   return 4;
 }
 
-function renderHeatmap(year, dayMap) {
+function renderHeatmap(year, dayMap, dayDetailsMap) {
   heatmapEl.innerHTML = '';
 
   const start = new Date(`${year}-01-01T00:00:00`);
@@ -66,14 +74,28 @@ function renderHeatmap(year, dayMap) {
   const sundayAlignedStart = new Date(start);
   sundayAlignedStart.setDate(start.getDate() - start.getDay());
 
-  for (let d = new Date(sundayAlignedStart); d <= end; d.setDate(d.getDate() + 1)) {
+  const saturdayAlignedEnd = new Date(end);
+  saturdayAlignedEnd.setDate(end.getDate() + (6 - end.getDay()));
+
+  const weekCount = Math.ceil((saturdayAlignedEnd - sundayAlignedStart + 1) / (7 * 24 * 3600 * 1000));
+  heatmapEl.style.gridTemplateColumns = `repeat(${weekCount}, 12px)`;
+
+  for (let d = new Date(sundayAlignedStart); d <= saturdayAlignedEnd; d.setDate(d.getDate() + 1)) {
     const iso = d.toISOString().slice(0, 10);
+    const isCurrentYear = d.getFullYear() === year;
+
     const minutes = dayMap.get(iso) || 0;
-    const level = levelFromMinutes(minutes);
+    const level = isCurrentYear ? levelFromMinutes(minutes) : 0;
+
+    const details = dayDetailsMap.get(iso) || [];
+    const detailText = details.length
+      ? details.map((x) => `- ${x.workout} ${x.duration}`).join('\n')
+      : '无训练';
 
     const cell = document.createElement('div');
     cell.className = `day lv${level}`;
-    cell.title = `${iso}: ${minutes}min`;
+    if (!isCurrentYear) cell.classList.add('out-of-year');
+    cell.title = `${iso}\n${detailText}`;
     heatmapEl.appendChild(cell);
   }
 }
@@ -98,31 +120,14 @@ async function loadYear(year) {
   if (!res.ok) throw new Error(`无法读取 ${year}.md`);
   const md = await res.text();
   const rows = parseYearMd(md, year);
-  const { dayMap, workoutMap, totalMinutes } = buildDayMap(rows);
+  const { dayMap, dayDetailsMap, workoutMap, totalMinutes } = buildDayMap(rows);
 
-  renderHeatmap(year, dayMap);
+  renderHeatmap(year, dayMap, dayDetailsMap);
   renderSummary(year, workoutMap, totalMinutes);
 }
 
-async function discoverYears() {
-  const currentYear = new Date().getFullYear();
-  const years = [];
-
-  for (let y = currentYear + 1; y >= 2020; y--) {
-    try {
-      const res = await fetch(yearDataUrl(y), { method: 'HEAD' });
-      if (res.ok) years.push(y);
-    } catch {
-      // ignore
-    }
-  }
-
-  if (years.length === 0) years.push(currentYear);
-  return years.sort((a, b) => b - a);
-}
-
 (async function init() {
-  const years = await discoverYears();
+  const years = [...AVAILABLE_YEARS].sort((a, b) => b - a);
   yearSelectEl.innerHTML = years.map((y) => `<option value="${y}">${y}</option>`).join('');
 
   const currentYear = String(new Date().getFullYear());
