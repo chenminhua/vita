@@ -89,16 +89,12 @@ function renderSummary(year, workoutMap, totalMinutes) {
   summaryContentEl.textContent = lines.join('\n');
 }
 
-const REPO_OWNER = 'chenminhua';
-const REPO_NAME = 'vita';
-const REPO_BRANCH = 'main';
-
-function rawFileUrl(fileName) {
-  return `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${REPO_BRANCH}/${fileName}`;
+function yearDataUrl(year) {
+  return `./data/${year}.md`;
 }
 
 async function loadYear(year) {
-  const res = await fetch(rawFileUrl(`${year}.md`));
+  const res = await fetch(yearDataUrl(year));
   if (!res.ok) throw new Error(`无法读取 ${year}.md`);
   const md = await res.text();
   const rows = parseYearMd(md, year);
@@ -109,25 +105,20 @@ async function loadYear(year) {
 }
 
 async function discoverYears() {
-  try {
-    const api = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents`;
-    const res = await fetch(api);
-    if (!res.ok) throw new Error('GitHub API failed');
-    const files = await res.json();
+  const currentYear = new Date().getFullYear();
+  const years = [];
 
-    const years = files
-      .map((f) => f.name)
-      .filter((name) => /^\d{4}\.md$/.test(name))
-      .map((name) => Number(name.replace('.md', '')))
-      .sort((a, b) => b - a);
-
-    if (years.length > 0) return years;
-  } catch {
-    // ignore and fallback
+  for (let y = currentYear + 1; y >= 2020; y--) {
+    try {
+      const res = await fetch(yearDataUrl(y), { method: 'HEAD' });
+      if (res.ok) years.push(y);
+    } catch {
+      // ignore
+    }
   }
 
-  const currentYear = new Date().getFullYear();
-  return [currentYear];
+  if (years.length === 0) years.push(currentYear);
+  return years.sort((a, b) => b - a);
 }
 
 (async function init() {

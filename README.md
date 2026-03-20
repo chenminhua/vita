@@ -7,6 +7,7 @@
 - `YYYY.md`：每年训练记录（Markdown 表格，三列：Date / Workout / Duration）
 - `health_status.md`：健康状态记录（最新在最上面）
 - `docs/`：GitHub Pages 页面（训练热力图 + 年度汇总）
+- `docs/data/YYYY.md`：Pages 使用的年度训练数据（与根目录 `YYYY.md` 保持同步）
 
 ## 记录规则
 
