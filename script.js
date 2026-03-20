@@ -60,9 +60,9 @@ function buildDayMap(rows) {
 
 function levelFromMinutes(minutes) {
   if (minutes <= 0) return 0;
-  if (minutes < 30) return 1;
-  if (minutes < 60) return 2;
-  if (minutes < 120) return 3;
+  if (minutes <= 30) return 1;
+  if (minutes <= 60) return 2;
+  if (minutes <= 90) return 3;
   return 4;
 }
 
