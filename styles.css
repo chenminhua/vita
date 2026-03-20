@@ -109,3 +109,18 @@ select {
   white-space: pre-wrap;
   line-height: 1.6;
 }
+
+.tooltip {
+  position: fixed;
+  z-index: 9999;
+  max-width: 280px;
+  padding: 8px 10px;
+  background: #24292f;
+  color: #f6f8fa;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+  white-space: pre-wrap;
+}

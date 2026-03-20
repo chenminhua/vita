@@ -2,6 +2,7 @@ const heatmapEl = document.getElementById('heatmap');
 const yearSelectEl = document.getElementById('yearSelect');
 const summaryTitleEl = document.getElementById('summaryTitle');
 const summaryContentEl = document.getElementById('summaryContent');
+const tooltipEl = document.getElementById('tooltip');
 
 // 手动维护可选年份（新增年份时在这里加）
 const AVAILABLE_YEARS = [2026];
@@ -65,6 +66,22 @@ function levelFromMinutes(minutes) {
   return 4;
 }
 
+function moveTooltip(x, y) {
+  const pad = 12;
+  tooltipEl.style.left = `${x + pad}px`;
+  tooltipEl.style.top = `${y + pad}px`;
+}
+
+function showTooltip(text, x, y) {
+  tooltipEl.textContent = text;
+  tooltipEl.hidden = false;
+  moveTooltip(x, y);
+}
+
+function hideTooltip() {
+  tooltipEl.hidden = true;
+}
+
 function renderHeatmap(year, dayMap, dayDetailsMap) {
   heatmapEl.innerHTML = '';
 
@@ -92,10 +109,22 @@ function renderHeatmap(year, dayMap, dayDetailsMap) {
       ? details.map((x) => `- ${x.workout} ${x.duration}`).join('\n')
       : '无训练';
 
+    const tipText = `${iso}\n${detailText}`;
+
     const cell = document.createElement('div');
     cell.className = `day lv${level}`;
     if (!isCurrentYear) cell.classList.add('out-of-year');
-    cell.title = `${iso}\n${detailText}`;
+
+    cell.addEventListener('mouseenter', (e) => showTooltip(tipText, e.clientX, e.clientY));
+    cell.addEventListener('mousemove', (e) => moveTooltip(e.clientX, e.clientY));
+    cell.addEventListener('mouseleave', hideTooltip);
+
+    cell.addEventListener('touchstart', (e) => {
+      const t = e.touches[0];
+      showTooltip(tipText, t.clientX, t.clientY);
+    }, { passive: true });
+    cell.addEventListener('touchend', hideTooltip, { passive: true });
+
     heatmapEl.appendChild(cell);
   }
 }
