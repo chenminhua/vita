@@ -90,7 +90,7 @@ function renderSummary(year, workoutMap, totalMinutes) {
 }
 
 function yearDataUrl(year) {
-  return `./data/${year}.md`;
+  return `./${year}.md`;
 }
 
 async function loadYear(year) {
