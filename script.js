@@ -129,13 +129,15 @@ function renderHeatmap(year, dayMap, dayDetailsMap) {
   }
 }
 
-function renderSummary(year, workoutMap, totalMinutes) {
+function renderSummary(year, workoutMap, totalMinutes, dayMap) {
   summaryTitleEl.textContent = `${year} summary`;
   const items = [...workoutMap.entries()].sort((a, b) => b[1] - a[1]);
 
+  const activeDays = [...dayMap.values()].filter((m) => m > 0).length;
+
   const lines = items.map(([name, min]) => `${name} ${formatMinutes(min)}`);
   lines.push('');
-  lines.push(`总计运动 ${formatMinutes(totalMinutes)}`);
+  lines.push(`总计运动 ${activeDays} 天，共 ${formatMinutes(totalMinutes)}`);
 
   summaryContentEl.textContent = lines.join('\n');
 }
@@ -152,7 +154,7 @@ async function loadYear(year) {
   const { dayMap, dayDetailsMap, workoutMap, totalMinutes } = buildDayMap(rows);
 
   renderHeatmap(year, dayMap, dayDetailsMap);
-  renderSummary(year, workoutMap, totalMinutes);
+  renderSummary(year, workoutMap, totalMinutes, dayMap);
 }
 
 (async function init() {
