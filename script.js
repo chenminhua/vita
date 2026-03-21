@@ -98,6 +98,7 @@ function renderHeatmap(year, dayMap, dayDetailsMap) {
   const weekCount = Math.ceil((saturdayAlignedEnd - sundayAlignedStart + 1) / (7 * 24 * 3600 * 1000));
   heatmapEl.style.gridTemplateColumns = `repeat(${weekCount}, 12px)`;
 
+  const oneWeekMs = 7 * 24 * 3600 * 1000;
   for (let d = new Date(sundayAlignedStart); d <= saturdayAlignedEnd; d.setUTCDate(d.getUTCDate() + 1)) {
     const iso = d.toISOString().slice(0, 10);
     const isCurrentYear = d.getUTCFullYear() === year;
@@ -112,9 +113,16 @@ function renderHeatmap(year, dayMap, dayDetailsMap) {
 
     const tipText = `${iso}\n${detailText}`;
 
+    const weekIndex = Math.floor((d - sundayAlignedStart) / oneWeekMs);
+    const dayOfWeek = d.getUTCDay(); // 0=周日 ... 6=周六
+
     const cell = document.createElement('div');
     cell.className = `day lv${level}`;
     if (!isCurrentYear) cell.classList.add('out-of-year');
+
+    // 显式指定网格位置：每列一周，行从周日到周六
+    cell.style.gridColumn = String(weekIndex + 1);
+    cell.style.gridRow = String(dayOfWeek + 1);
 
     cell.addEventListener('mouseenter', (e) => showTooltip(tipText, e.clientX, e.clientY));
     cell.addEventListener('mousemove', (e) => moveTooltip(e.clientX, e.clientY));
