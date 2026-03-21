@@ -85,21 +85,22 @@ function hideTooltip() {
 function renderHeatmap(year, dayMap, dayDetailsMap) {
   heatmapEl.innerHTML = '';
 
-  const start = new Date(`${year}-01-01T00:00:00`);
-  const end = new Date(`${year}-12-31T00:00:00`);
+  // 使用 UTC，避免本地时区导致日期偏移（例如周六跑到每周第一格）
+  const start = new Date(Date.UTC(year, 0, 1));
+  const end = new Date(Date.UTC(year, 11, 31));
 
   const sundayAlignedStart = new Date(start);
-  sundayAlignedStart.setDate(start.getDate() - start.getDay());
+  sundayAlignedStart.setUTCDate(start.getUTCDate() - start.getUTCDay());
 
   const saturdayAlignedEnd = new Date(end);
-  saturdayAlignedEnd.setDate(end.getDate() + (6 - end.getDay()));
+  saturdayAlignedEnd.setUTCDate(end.getUTCDate() + (6 - end.getUTCDay()));
 
   const weekCount = Math.ceil((saturdayAlignedEnd - sundayAlignedStart + 1) / (7 * 24 * 3600 * 1000));
   heatmapEl.style.gridTemplateColumns = `repeat(${weekCount}, 12px)`;
 
-  for (let d = new Date(sundayAlignedStart); d <= saturdayAlignedEnd; d.setDate(d.getDate() + 1)) {
+  for (let d = new Date(sundayAlignedStart); d <= saturdayAlignedEnd; d.setUTCDate(d.getUTCDate() + 1)) {
     const iso = d.toISOString().slice(0, 10);
-    const isCurrentYear = d.getFullYear() === year;
+    const isCurrentYear = d.getUTCFullYear() === year;
 
     const minutes = dayMap.get(iso) || 0;
     const level = isCurrentYear ? levelFromMinutes(minutes) : 0;
