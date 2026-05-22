@@ -9,8 +9,16 @@ const AVAILABLE_YEARS = [2026];
 
 const toMinutes = (duration) => {
   const t = String(duration).trim().toLowerCase();
-  if (t.endsWith('min')) return Number(t.replace('min', '')) || 0;
-  if (t.endsWith('h')) return (Number(t.replace('h', '')) || 0) * 60;
+
+  const hm = t.match(/^(\d+)h(\d+)min$/);
+  if (hm) return Number(hm[1]) * 60 + Number(hm[2]);
+
+  const h = t.match(/^(\d+)h$/);
+  if (h) return Number(h[1]) * 60;
+
+  const m = t.match(/^(\d+)min$/);
+  if (m) return Number(m[1]);
+
   return 0;
 };
 
