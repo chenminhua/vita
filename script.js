@@ -6,6 +6,7 @@ const tooltipEl = document.getElementById('tooltip');
 
 // 手动维护可选年份（新增年份时在这里加）
 const AVAILABLE_YEARS = [2026];
+const ASSET_VERSION = '2026-05-22-1';
 
 const toMinutes = (duration) => {
   const t = String(duration).trim().toLowerCase();
@@ -160,7 +161,7 @@ function renderSummary(year, workoutMap, totalMinutes, dayMap) {
 }
 
 function yearDataUrl(year) {
-  return `./${year}.md`;
+  return `./${year}.md?v=${ASSET_VERSION}`;
 }
 
 async function loadYear(year) {
